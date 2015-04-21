@@ -1,0 +1,64 @@
+#! /bin/bash
+### BEGIN INIT INFO
+# Provides:          mjpg-streamer
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start/stop the mjpg-streamer functions, i.e. AV4L and temp
+# Description:       This script manages the v4l and telldus REST service to
+#                    allow them be accessed from elsewhere.
+### END INIT INFO
+
+# Author: Brendan Murray
+#
+# PATH should only include /usr/* if it runs after the mountnfs.sh script
+PATH=/sbin:/usr/sbin:/bin:/usr/bin:/opt/node/bin
+DESC="V4L"
+NAME=mjpg-streamerd
+SCRIPTNAME=/etc/init.d/$NAME
+INPUTSTREAM="/usr/local/lib/input_raspicam.so -ex night -fps 4 -x 520 -y 390"
+OUTPUTSTREAM="/usr/local/lib/output_http.so -p 10089 -w /usr/local/www"
+
+case "$1" in
+  start)
+	echo "Starting $NAME - $DESC"
+	LD_LIBRARY_PATH=/usr/local/lib
+	/usr/local/bin/gpio mode 25 out
+	/usr/local/bin/gpio mode 26 out
+	/usr/local/bin/gpio mode 27 out
+	/usr/local/bin/gpio write 25 1
+	/usr/local/bin/gpio write 26 1
+	/usr/local/bin/gpio write 27 1
+	/usr/local/bin/mjpg_streamer -i "$INPUTSTREAM" -o "$OUTPUTSTREAM" &
+	;;
+  stop)
+	echo "Stopping $NAME - $DESC"
+	/usr/local/bin/gpio mode 25 out
+	/usr/local/bin/gpio mode 26 out
+	/usr/local/bin/gpio mode 27 out
+	/usr/local/bin/gpio write 25 0
+	/usr/local/bin/gpio write 26 0
+	/usr/local/bin/gpio write 27 0
+	killall mjpg_streamer
+	;;
+  restart)
+	echo "Restarting $NAME - $DESC"
+	killall mjpg_streamer
+	LD_LIBRARY_PATH=/usr/local/lib
+	/usr/local/bin/gpio mode 25 out
+	/usr/local/bin/gpio mode 26 out
+	/usr/local/bin/gpio mode 27 out
+	/usr/local/bin/gpio write 25 1
+	/usr/local/bin/gpio write 26 1
+	/usr/local/bin/gpio write 27 1
+	/usr/local/bin/mjpg_streamer -i "$INPUTSTREAM" -o "$OUTPUTSTREAM" &
+	;;
+  *)
+	echo "Usage: $SCRIPTNAME {start|stop|restart}" >&2
+	exit 3
+	;;
+esac
+
+:
+

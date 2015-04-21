@@ -1,0 +1,54 @@
+#! /bin/sh
+# Starts and stops Node-RED
+# /etc/init.d/nodered
+### BEGIN INIT INFO
+# Provides:     node-red
+# Required-Start:       $syslog
+# Required-Stop:        $syslog
+# Default-Start:        2 3 4 5
+# Default-Stop:         0 1 6
+# Short-Description:    Node-RED initialisation
+### END INIT INFO
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+DAEMON=/usr/local/bin/node-red-pi
+NAME=node-red
+DESC="Node-RED Programming Service"
+LOG=/var/log/${NAME}.log
+USER=root
+. /lib/lsb/init-functions
+ 
+case "${1}" in
+   restart|reload|force-reload)
+      $0 stop
+      $0 start
+      ;;
+   start)
+      log_action_begin_msg "Starting the ${DESC}"
+      echo -n "Start ${NAME} " >> $LOG
+      date >> $LOG
+      su -l ${USER} -c "${DAEMON} --max-old-space-size=64 >> $LOG 2>&1 &"
+      echo "... successful start" >> $LOG
+      log_action_end_msg 0
+      ;;
+   stop)
+      log_action_begin_msg "Stopping the ${DESC}"
+      echo -n "Stop ${NAME} " >> $LOG
+      date >> $LOG
+      echo " " >> $LOG
+      killall -2 ${NAME}
+      echo "... successful stop" >> $LOG
+      log_action_end_msg 0
+      ;;
+   force-stop)
+      killall -9 ${NAME}
+      echo -n "Stop ${NAME} - force-stop " >> $LOG
+      date >> $LOG
+      echo " " >> $LOG
+      log_action_end_msg 0
+      ;;
+   *)
+      echo "Usage: ${NAME} {start|restart|reload|force-reload|stop|force-stop}"
+      exit 1
+      ;;
+esac
+ 
