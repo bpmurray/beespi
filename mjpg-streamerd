@@ -17,8 +17,14 @@ PATH=/sbin:/usr/sbin:/bin:/usr/bin:/opt/node/bin
 DESC="V4L"
 NAME=mjpg-streamerd
 SCRIPTNAME=/etc/init.d/$NAME
+# Change the lines below to your liking:
+#    -fps 4    = 4 frames per second
+#    -x 520    = 520 pixels wide
+#    -y 390    = 390 pixels high
+#    -p 10088  = stream on port 10088
+#    -ex night = switch camera into night mode
 INPUTSTREAM="/usr/local/lib/input_raspicam.so -ex night -fps 4 -x 520 -y 390"
-OUTPUTSTREAM="/usr/local/lib/output_http.so -p 10089 -w /usr/local/www"
+OUTPUTSTREAM="/usr/local/lib/output_http.so -p 10088 -w /usr/local/www"
 
 case "$1" in
   start)
@@ -59,6 +65,4 @@ case "$1" in
 	exit 3
 	;;
 esac
-
-:
 
