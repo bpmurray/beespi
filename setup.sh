@@ -81,3 +81,9 @@ sudo update-rc.d mjpg-streamerd defaults
 sudo ${GITFILES}/setuproot.sh
 
 
+# Enable the camera
+echo "**************************************"
+echo " Now enable the camera in raspiconfig "
+echo "**************************************"
+read -p "Press ENTER to start ..."
+sudo raspi-config
