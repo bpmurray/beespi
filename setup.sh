@@ -15,7 +15,7 @@ cd ${PROJECTDIR}
 # Update the system software
 sudo apt-get -y update
 sudo apt-get -y upgrade
-sudo apt-get -y install build-essential subversion libjpeg8-dev imagemagick libv4l-0 libv4l-dev uvc dynctrl git-core libicu-dev cmake
+sudo apt-get -y install build-essential subversion libjpeg8-dev imagemagick libv4l-0 libv4l-dev uvcdynctrl git-core libicu-dev cmake
 
 ################## Node & Node-RED ####################
 # Get NODE
