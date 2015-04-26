@@ -13,9 +13,9 @@ cd ${PROJECTDIR}
 
 ################## System ####################
 # Update the system software
-sudo apt-get update
-sudo apt-get upgrade
-sudo apt-get install build-essential subversion libjpeg8-dev imagemagick libv4l-0 libv4l-dev uvc dynctrl git-core
+sudo apt-get -y update
+sudo apt-get -y upgrade
+sudo apt-get -y install build-essential subversion libjpeg8-dev imagemagick libv4l-0 libv4l-dev uvc dynctrl git-core libicu-dev cmake
 
 ################## Node & Node-RED ####################
 # Get NODE
@@ -30,6 +30,16 @@ git clone git://git.drogon.net/wiringPi
 cd wiringPi
 ./build
 
+################## bcm2835 ####################
+cd ${PROJECTDIR}
+wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.36.tar.gz
+tar zxvf bcm2835-1.36.tar.gz
+cd bcm2835-1.36
+./configure
+make
+sudo make check
+sudo make install
+
 ################## mjpg-streamer ####################
 cd ${PROJECTDIR}
 # Download the mjpg-streamer code
@@ -43,30 +53,11 @@ sudo make install
 # Get the Raspberry Pi extensions for mjpg-streamer
 cd ${PROJECTDIR}
 wget https://github.com/jacksonliam/mjpg-streamer/archive/master.zip
-unzip mjpg-streamer-master.zip
+unzip master.zip
 cd mjpg-streamer-master/mjpg-streamer-experimental
 make
 sudo make install
 
-################## System files ####################
-#  Set up system files
-sudo cat >>/boot/config.txt <<__EOF
-# Turn off the camera LED
-disable_camera_led=1
-
-# Set 1-wire GPIO pin number
-dtoverlay=w1-gpio,gpiopin=4
-device_tree=
-__EOF
-
-sudo cat >>/etc/modules <<__EOF
-snd-bcm2835
-w1-gpio
-w1-therm
-bcm2835_v4l2
-i2c-bcm2708
-i2c-dev
-__EOF
 
 ################## Scripts ####################
 # Set up startup scripts
@@ -80,10 +71,3 @@ sudo update-rc.d mjpg-streamerd defaults
 # Set up the node-red extras
 sudo ${GITFILES}/setuproot.sh
 
-
-# Enable the camera
-echo "**************************************"
-echo " Now enable the camera in raspiconfig "
-echo "**************************************"
-read -p "Press ENTER to start ..."
-sudo raspi-config
