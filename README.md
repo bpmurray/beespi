@@ -17,10 +17,13 @@ are present:
   * # Set 1-wire GPIO pin number
   * dtoverlay=w1-gpio,gpiopin=4
   * device_tree=
-* /etc/modules
+* /etc/modules (the order is important)
   * snd-bcm2835
   * w1-gpio
   * w1-therm
   * bcm2835_v4l2
   * i2c-bcm2708
   * i2c-dev
+* /etc/modprobe.d/raspi-blacklist.conf (create the file if it doesn't exist)
+  * blacklist snd-soc-pcm512x
+  * blacklist snd-soc-wm8804
