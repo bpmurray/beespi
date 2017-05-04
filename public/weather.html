@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<head><title>Brendan's Weather</title>
+   <meta http-equiv="expires" content="Tue, 01 Nov 2016 1:00:00 GMT" />
+   <meta http-equiv="Cache-Control" content="max-age=604800">
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <link rel="stylesheet" href="css/styles.css" />
+   <script src="//beespi.mybluemix.net/wdata"></script>
+   <script>
+      function toBft(ms) {
+         var bftmap = [
+            { bft:0, ms:0.0 },
+            { bft:1, ms:0.5 },
+            { bft:2, ms:1.9 },
+            { bft:3, ms:3.4 },
+            { bft:4, ms:5.5 },
+            { bft:5, ms:8.0 },
+            { bft:6, ms:11.1 },
+            { bft:7, ms:14.2 },
+            { bft:8, ms:17.3 },
+            { bft:9, ms:20.9 },
+            { bft:10, ms:24.5 },
+            { bft:11, ms:28.6 },
+            { bft:12, ms:32.6 }
+         ];
+         for (var iX=0; iX<12; iX++) {
+            if (ms < bftmap[iX+1].ms)
+               return bftmap[iX].bft;
+         }
+         return bftmap[13].bft;
+      }
+      var colors = [ "MediumTurquoise", "SeaGreen", "limegreen", "darkkhaki", "DarkOrange", "lightcoral",
+         "crimson", "plum", "darkviolet", "deepskyblue", "dodgerblue", "mediumblue", "black" ];
+      function displayData(count) {
+         for (var Loc=0; Loc<count; Loc++) {
+            var forecast = WeatherData.vals[Loc].forecasts;
+            var elemId = "gps" + Loc;
+            var elem = document.getElementById(elemId);
+         	elem.innerHTML = WeatherData.vals[Loc].metadata.latitude + ", " +
+         	                 WeatherData.vals[Loc].metadata.longitude;
+            for (var iX=0; iX<forecast.length; iX++) {
+               wind = toBft(forecast[iX].wspd);
+               elemId = "t" + (Loc+1) + "r1c" + (iX+1);
+               elem = document.getElementById(elemId);
+               elem.innerHTML = forecast[iX].fcst_valid_local.substr(11,5);
+               elemId = "t" + (Loc+1) + "r2c" + (iX+1);
+               elem = document.getElementById(elemId);
+               elem.src = "weathericons/icon" + forecast[iX].icon_code + ".png";
+               elemId = "t" + (Loc+1) + "r3c" + (iX+1);
+               elem = document.getElementById(elemId);
+               elem.innerHTML = forecast[iX].temp + "&deg;C";
+               elemId = "t" + (Loc+1) + "r4c" + (iX+1);
+               elem = document.getElementById(elemId);
+               elem.innerHTML = forecast[iX].phrase_12char;
+               elemId = "t" + (Loc+1) + "r5c" + (iX+1);
+               elem = document.getElementById(elemId);
+               //elem.innerHTML = forecast[iX].wspd + "m/s " + forecast[iX].wdir_cardinal;
+               elem.innerHTML = "F" + wind + " " + forecast[iX].wdir_cardinal;
+               elemId = "t" + (Loc+1) + "c" + (iX+1);
+               elem = document.getElementById(elemId);
+               elem.style.backgroundColor = colors[wind];
+            }
+         }
+      }
+   </script>
+</head><body>
+<h1>Forecast for the next 24 hours</h1>
+<div>
+   <h2>Carlingford lighthouse: <span id="gps0"></span></h2>
+   <ul class="flex-container">
+      <li id="t1c1" class="flex-item">
+         <span id="t1r1c1"></span><br />
+         <img style="width:48px" id="t1r2c1"></img><br />
+         <span id="t1r3c1"></span><br />
+         <span id="t1r4c1"></span><br />
+         <span id="t1r5c1"></span><br />
+      </li>
+      <li id="t1c2" class="flex-item">
+         <span id="t1r1c2"></span><br />
+         <img style="width:48px" id="t1r2c2"></img><br />
+         <span id="t1r3c2"></span><br />
+         <span id="t1r4c2"></span><br />
+         <span id="t1r5c2"></span><br />
+      </li>
+      <li id="t1c3" class="flex-item">
+         <span id="t1r1c3"></span><br />
+         <img style="width:48px" id="t1r2c3"></img><br />
+         <span id="t1r3c3"></span><br />
+         <span id="t1r4c3"></span><br />
+         <span id="t1r5c3"></span><br />
+      </li>
+      <li id="t1c4" class="flex-item">
+         <span id="t1r1c4"></span><br />
+         <img style="width:48px" id="t1r2c4"></img><br />
+         <span id="t1r3c4"></span><br />
+         <span id="t1r4c4"></span><br />
+         <span id="t1r5c4"></span><br />
+      </li>
+      <li id="t1c5" class="flex-item">
+         <span id="t1r1c5"></span><br />
+         <img style="width:48px" id="t1r2c5"></img><br />
+         <span id="t1r3c5"></span><br />
+         <span id="t1r4c5"></span><br />
+         <span id="t1r5c5"></span><br />
+      </li>
+      <li id="t1c6" class="flex-item">
+         <span id="t1r1c6"></span><br />
+         <img style="width:48px" id="t1r2c6"></img><br />
+         <span id="t1r3c6"></span><br />
+         <span id="t1r4c6"></span><br />
+         <span id="t1r5c6"></span><br />
+      </li>
+      <li id="t1c7" class="flex-item">
+         <span id="t1r1c7"></span><br />
+         <img style="width:48px" id="t1r2c7"></img><br />
+         <span id="t1r3c7"></span><br />
+         <span id="t1r4c7"></span><br />
+         <span id="t1r5c7"></span><br />
+      </li>
+      <li id="t1c8" class="flex-item">
+         <span id="t1r1c8"></span><br />
+         <img style="width:48px" id="t1r2c8"></img><br />
+         <span id="t1r3c8"></span><br />
+         <span id="t1r4c8"></span><br />
+         <span id="t1r5c8"></span><br />
+      </li>
+      <li id="t1c9" class="flex-item">
+         <span id="t1r1c9"></span><br />
+         <img style="width:48px" id="t1r2c9"></img><br />
+         <span id="t1r3c9"></span><br />
+         <span id="t1r4c9"></span><br />
+         <span id="t1r5c9"></span><br />
+      </li>
+      <li id="t1c10" class="flex-item">
+         <span id="t1r1c10"></span><br />
+         <img style="width:48px" id="t1r2c10"></img><br />
+         <span id="t1r3c10"></span><br />
+         <span id="t1r4c10"></span><br />
+         <span id="t1r5c10"></span><br />
+      </li>
+      <li id="t1c11" class="flex-item">
+         <span id="t1r1c11"></span><br />
+         <img style="width:48px" id="t1r2c11"></img><br />
+         <span id="t1r3c11"></span><br />
+         <span id="t1r4c11"></span><br />
+         <span id="t1r5c11"></span><br />
+      </li>
+      <li id="t1c12" class="flex-item">
+         <span id="t1r1c12"></span><br />
+         <img style="width:48px" id="t1r2c12"></img><br />
+         <span id="t1r3c12"></span><br />
+         <span id="t1r4c12"></span><br />
+         <span id="t1r5c12"></span><br />
+      </li>
+      <li id="t1c13" class="flex-item">
+         <span id="t1r1c13"></span><br />
+         <img style="width:48px" id="t1r2c13"></img><br />
+         <span id="t1r3c13"></span><br />
+         <span id="t1r4c13"></span><br />
+         <span id="t1r5c13"></span><br />
+      </li>
+      <li id="t1c14" class="flex-item">
+         <span id="t1r1c14"></span><br />
+         <img style="width:48px" id="t1r2c14"></img><br />
+         <span id="t1r3c14"></span><br />
+         <span id="t1r4c14"></span><br />
+         <span id="t1r5c14"></span><br />
+      </li>
+      <li id="t1c15" class="flex-item">
+         <span id="t1r1c15"></span><br />
+         <img style="width:48px" id="t1r2c15"></img><br />
+         <span id="t1r3c15"></span><br />
+         <span id="t1r4c15"></span><br />
+         <span id="t1r5c15"></span><br />
+      </li>
+      <li id="t1c16" class="flex-item">
+         <span id="t1r1c16"></span><br />
+         <img style="width:48px" id="t1r2c16"></img><br />
+         <span id="t1r3c16"></span><br />
+         <span id="t1r4c16"></span><br />
+         <span id="t1r5c16"></span><br />
+      </li>
+      <li id="t1c17" class="flex-item">
+         <span id="t1r1c17"></span><br />
+         <img style="width:48px" id="t1r2c17"></img><br />
+         <span id="t1r3c17"></span><br />
+         <span id="t1r4c17"></span><br />
+         <span id="t1r5c17"></span><br />
+      </li>
+      <li id="t1c18" class="flex-item">
+         <span id="t1r1c18"></span><br />
+         <img style="width:48px" id="t1r2c18"></img><br />
+         <span id="t1r3c18"></span><br />
+         <span id="t1r4c18"></span><br />
+         <span id="t1r5c18"></span><br />
+      </li>
+      <li id="t1c19" class="flex-item">
+         <span id="t1r1c19"></span><br />
+         <img style="width:48px" id="t1r2c19"></img><br />
+         <span id="t1r3c19"></span><br />
+         <span id="t1r4c19"></span><br />
+         <span id="t1r5c19"></span><br />
+      </li>
+      <li id="t1c20" class="flex-item">
+         <span id="t1r1c20"></span><br />
+         <img style="width:48px" id="t1r2c20"></img><br />
+         <span id="t1r3c20"></span><br />
+         <span id="t1r4c20"></span><br />
+         <span id="t1r5c20"></span><br />
+      </li>
+      <li id="t1c21" class="flex-item">
+         <span id="t1r1c21"></span><br />
+         <img style="width:48px" id="t1r2c21"></img><br />
+         <span id="t1r3c21"></span><br />
+         <span id="t1r4c21"></span><br />
+         <span id="t1r5c21"></span><br />
+      </li>
+      <li id="t1c22" class="flex-item">
+         <span id="t1r1c22"></span><br />
+         <img style="width:48px" id="t1r2c22"></img><br />
+         <span id="t1r3c22"></span><br />
+         <span id="t1r4c22"></span><br />
+         <span id="t1r5c22"></span><br />
+      </li>
+      <li id="t1c23" class="flex-item">
+         <span id="t1r1c23"></span><br />
+         <img style="width:48px" id="t1r2c23"></img><br />
+         <span id="t1r3c23"></span><br />
+         <span id="t1r4c23"></span><br />
+         <span id="t1r5c23"></span><br />
+      </li>
+      <li id="t1c24" class="flex-item">
+         <span id="t1r1c24"></span><br />
+         <img style="width:48px" id="t1r2c24"></img><br />
+         <span id="t1r3c24"></span><br />
+         <span id="t1r4c24"></span><br />
+         <span id="t1r5c24"></span><br />
+      </li>
+   </ul>
+   <br />
+   <h2>Malangen Fjordferie: <span id="gps1"></span></h2>
+   <ul class="flex-container">
+      <li id="t2c1" class="flex-item">
+         <span id="t2r1c1"></span><br />
+         <img style="width:48px" id="t2r2c1"></img><br />
+         <span id="t2r3c1"></span><br />
+         <span id="t2r4c1"></span><br />
+         <span id="t2r5c1"></span><br />
+      </li>
+      <li id="t2c2" class="flex-item">
+         <span id="t2r1c2"></span><br />
+         <img style="width:48px" id="t2r2c2"></img><br />
+         <span id="t2r3c2"></span><br />
+         <span id="t2r4c2"></span><br />
+         <span id="t2r5c2"></span><br />
+      </li>
+      <li id="t2c3" class="flex-item">
+         <span id="t2r1c3"></span><br />
+         <img style="width:48px" id="t2r2c3"></img><br />
+         <span id="t2r3c3"></span><br />
+         <span id="t2r4c3"></span><br />
+         <span id="t2r5c3"></span><br />
+      </li>
+      <li id="t2c4" class="flex-item">
+         <span id="t2r1c4"></span><br />
+         <img style="width:48px" id="t2r2c4"></img><br />
+         <span id="t2r3c4"></span><br />
+         <span id="t2r4c4"></span><br />
+         <span id="t2r5c4"></span><br />
+      </li>
+      <li id="t2c5" class="flex-item">
+         <span id="t2r1c5"></span><br />
+         <img style="width:48px" id="t2r2c5"></img><br />
+         <span id="t2r3c5"></span><br />
+         <span id="t2r4c5"></span><br />
+         <span id="t2r5c5"></span><br />
+      </li>
+      <li id="t2c6" class="flex-item">
+         <span id="t2r1c6"></span><br />
+         <img style="width:48px" id="t2r2c6"></img><br />
+         <span id="t2r3c6"></span><br />
+         <span id="t2r4c6"></span><br />
+         <span id="t2r5c6"></span><br />
+      </li>
+      <li id="t2c7" class="flex-item">
+         <span id="t2r1c7"></span><br />
+         <img style="width:48px" id="t2r2c7"></img><br />
+         <span id="t2r3c7"></span><br />
+         <span id="t2r4c7"></span><br />
+         <span id="t2r5c7"></span><br />
+      </li>
+      <li id="t2c8" class="flex-item">
+         <span id="t2r1c8"></span><br />
+         <img style="width:48px" id="t2r2c8"></img><br />
+         <span id="t2r3c8"></span><br />
+         <span id="t2r4c8"></span><br />
+         <span id="t2r5c8"></span><br />
+      </li>
+      <li id="t2c9" class="flex-item">
+         <span id="t2r1c9"></span><br />
+         <img style="width:48px" id="t2r2c9"></img><br />
+         <span id="t2r3c9"></span><br />
+         <span id="t2r4c9"></span><br />
+         <span id="t2r5c9"></span><br />
+      </li>
+      <li id="t2c10" class="flex-item">
+         <span id="t2r1c10"></span><br />
+         <img style="width:48px" id="t2r2c10"></img><br />
+         <span id="t2r3c10"></span><br />
+         <span id="t2r4c10"></span><br />
+         <span id="t2r5c10"></span><br />
+      </li>
+      <li id="t2c11" class="flex-item">
+         <span id="t2r1c11"></span><br />
+         <img style="width:48px" id="t2r2c11"></img><br />
+         <span id="t2r3c11"></span><br />
+         <span id="t2r4c11"></span><br />
+         <span id="t2r5c11"></span><br />
+      </li>
+      <li id="t2c12" class="flex-item">
+         <span id="t2r1c12"></span><br />
+         <img style="width:48px" id="t2r2c12"></img><br />
+         <span id="t2r3c12"></span><br />
+         <span id="t2r4c12"></span><br />
+         <span id="t2r5c12"></span><br />
+      </li>
+      <li id="t2c13" class="flex-item">
+         <span id="t2r1c13"></span><br />
+         <img style="width:48px" id="t2r2c13"></img><br />
+         <span id="t2r3c13"></span><br />
+         <span id="t2r4c13"></span><br />
+         <span id="t2r5c13"></span><br />
+      </li>
+      <li id="t2c14" class="flex-item">
+         <span id="t2r1c14"></span><br />
+         <img style="width:48px" id="t2r2c14"></img><br />
+         <span id="t2r3c14"></span><br />
+         <span id="t2r4c14"></span><br />
+         <span id="t2r5c14"></span><br />
+      </li>
+      <li id="t2c15" class="flex-item">
+         <span id="t2r1c15"></span><br />
+         <img style="width:48px" id="t2r2c15"></img><br />
+         <span id="t2r3c15"></span><br />
+         <span id="t2r4c15"></span><br />
+         <span id="t2r5c15"></span><br />
+      </li>
+      <li id="t2c16" class="flex-item">
+         <span id="t2r1c16"></span><br />
+         <img style="width:48px" id="t2r2c16"></img><br />
+         <span id="t2r3c16"></span><br />
+         <span id="t2r4c16"></span><br />
+         <span id="t2r5c16"></span><br />
+      </li>
+      <li id="t2c17" class="flex-item">
+         <span id="t2r1c17"></span><br />
+         <img style="width:48px" id="t2r2c17"></img><br />
+         <span id="t2r3c17"></span><br />
+         <span id="t2r4c17"></span><br />
+         <span id="t2r5c17"></span><br />
+      </li>
+      <li id="t2c18" class="flex-item">
+         <span id="t2r1c18"></span><br />
+         <img style="width:48px" id="t2r2c18"></img><br />
+         <span id="t2r3c18"></span><br />
+         <span id="t2r4c18"></span><br />
+         <span id="t2r5c18"></span><br />
+      </li>
+      <li id="t2c19" class="flex-item">
+         <span id="t2r1c19"></span><br />
+         <img style="width:48px" id="t2r2c19"></img><br />
+         <span id="t2r3c19"></span><br />
+         <span id="t2r4c19"></span><br />
+         <span id="t2r5c19"></span><br />
+      </li>
+      <li id="t2c20" class="flex-item">
+         <span id="t2r1c20"></span><br />
+         <img style="width:48px" id="t2r2c20"></img><br />
+         <span id="t2r3c20"></span><br />
+         <span id="t2r4c20"></span><br />
+         <span id="t2r5c20"></span><br />
+      </li>
+      <li id="t2c21" class="flex-item">
+         <span id="t2r1c21"></span><br />
+         <img style="width:48px" id="t2r2c21"></img><br />
+         <span id="t2r3c21"></span><br />
+         <span id="t2r4c21"></span><br />
+         <span id="t2r5c21"></span><br />
+      </li>
+      <li id="t2c22" class="flex-item">
+         <span id="t2r1c22"></span><br />
+         <img style="width:48px" id="t2r2c22"></img><br />
+         <span id="t2r3c22"></span><br />
+         <span id="t2r4c22"></span><br />
+         <span id="t2r5c22"></span><br />
+      </li>
+      <li id="t2c23" class="flex-item">
+         <span id="t2r1c23"></span><br />
+         <img style="width:48px" id="t2r2c23"></img><br />
+         <span id="t2r3c23"></span><br />
+         <span id="t2r4c23"></span><br />
+         <span id="t2r5c23"></span><br />
+      </li>
+      <li id="t2c24" class="flex-item">
+         <span id="t2r1c24"></span><br />
+         <img style="width:48px" id="t2r2c24"></img><br />
+         <span id="t2r3c24"></span><br />
+         <span id="t2r4c24"></span><br />
+         <span id="t2r5c24"></span><br />
+      </li>
+   </ul>
+</div>
+
+
+</body>
+<script type="text/javascript">
+   displayData(WeatherData.vals.length);
+</script>
+</html>

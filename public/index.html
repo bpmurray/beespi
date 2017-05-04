@@ -1,272 +1,47 @@
 <!DOCTYPE html>
 <head><title>Brendan's Beez</title>
+   <meta http-equiv="expires" content="Tue, 01 Nov 2016 1:00:00 GMT" />
+   <meta http-equiv="Cache-Control" content="max-age=604800">
    <meta charset="utf-8">
    <meta name="viewport" content="width=device-width, initial-scale=1">
-   <link rel="icon" href="images/favicon.ico">
-   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+   <meta name="norton-safeweb-site-verification" content="pmtw1rl4shz6-98a6gxoxkmge0opa4ovlc2eg9zarnvm1lb07wyn47jq0u7q8o4pl87kte5ojymhyzhl9f8dzxoq71cc3x1oq2yvhh3lhzbhhhzn4hxoaj7u7pnqblz-" />
+   <script src="//beespi.mybluemix.net/tdata"></script>
+   <script src="//beespi.mybluemix.net/hdata"></script>
+   <script src="//beespi.mybluemix.net/edata"></script>
+   <script src="//beespi.mybluemix.net/hivedata"></script>
+   <link rel="icon" href="images/BrendansBeezIco.jpg">
+   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css">
 
    <link rel="stylesheet" href="css/styles.css" />
 
-   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-   <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-   <script type="text/javascript" src='https://www.google.com/jsapi?autoload={"modules":[{"name":"visualization","version":"1","packages":["corechart","gauge"]}]}'></script>
+   <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+   <script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+   <script type="text/javascript" src='//www.google.com/jsapi?autoload={"modules":[{"name":"visualization","version":"1","packages":["corechart","gauge"]}]}'></script>
 
-   <!-- Use REST to find the external termperature -->
-   <script src="http://beespi.mybluemix.net/external"></script>
+   <script type="text/javascript" src="js/beespi.js"></script>
 
    <script type="text/javascript">
-      // This is the merge function
-      // It's not generic, assuming 3 arrays
-      function mergeArrays(arrarr, tdata, hlist) {
 
-         // Identify the largest array - assume this is a superset
-         var longest = 0;
-         var basearr = [ null ]; // Contains date only
-         $.each(arrarr, function(index, arr) {
-            if (arr.length > arrarr[longest].length)
-               longest = index;
-            basearr.push(null);
-         });
+      // Prevent multiple initializations
+      var isInitialized = false;
 
-         // Now fill the array with the longest
-         var merged = [];
-         for (var iX=0; iX<arrarr[longest].length; iX++) {
-            basearr[0] = arrarr[longest][iX][0];
-            basearr[1] = arrarr[longest][iX][1];
-            merged.push(basearr.slice(0));
-         }
-         tdata.addColumn('number', hlist[longest]);
-
-         // Add the values from the other 2 arrays to each array element
-         var displacement = 0;    // Where in the target array we need to add
-         var val = 2;             // Which element in the array to update
-
-         // Scan the array list
-         $.each(arrarr, function(iY, arr) {
-            if (iY !== longest) {  // Ignore the one we already loaded
-               tdata.addColumn('number', hlist[iY]);
-               displacement = 0;  // a 1-to-1 target
-               var entry = [];
-               for (var iX=0; iX<arr.length; iX++) {
-                  entry = arr[iX];
-                  var now = new Date(entry[0]);
-
-                  // Skip forward until we find the same time
-                  while (iX+displacement < merged.length &&
-                         merged[iX+displacement] != undefined &&
-                         merged[iX+displacement][0]-now+24000 < 0) {
-                     displacement++;
-                  }
-                  if (iX + displacement < merged.length) {
-                     merged[iX+displacement][val] = entry[1];
-                  } else {
-                     // Add a new element - nulls for other entries
-                     merged.push([now, null, null, null]);
-                     merged[merged.length-1][val] = entry[1];
-                  }
-               }
-               val++;
-            }
-         });
-
-         return(merged);
+      // Initialization
+      function initializePage() {
+         if (isInitialized)
+            return;
+         isInitialized = true;
+         var sensorInfo = cleanHives();
+         streamVideo(10088,'#video1','snapshot');
+         genGauges();
+         buildAllTemps(sensorInfo);
+         buildAllHums(sensorInfo);
+         buildExternal();
       }
 
-
-      function drawGauge(temp) {
-         var options = {min: -10, max: 30, yellowFrom: 20, yellowTo: 25,
-                        redFrom: 25, redTo: 30, minorTicks: 5};
-         gaugeData = new google.visualization.DataTable();
-         gaugeData.addColumn('number', '\u00b0C');
-         gaugeData.addRows(1);
-         gaugeData.setCell(0, 0, temp.toFixed(1));
-         var gauge = new google.visualization.Gauge($('#curtmp')[0]);
-         gauge.draw(gaugeData, options);
-         $('#curtmp').parent().width($('#curtmp').find("svg").width());
-      }
-
-      function genGraphs(h) {
-         var dateFormatter = new google.visualization.DateFormat(
-                                       { pattern: "dd/MM/yy kk:mm" });
-         var Toptions = {
-            title: h.desc,
-            interpolateNulls: true,
-            curveType: 'function',
-            legend: { position: 'bottom' },
-            crosshairs: { orientation: 'vertical', trigger: 'both' },
-            vAxis: { 
-              title: "Temperature \u00b0C", 
-              viewWindowMode:'explicit',
-              viewWindow:{
-                max:40,
-                min:-5
-              }
-            }
-         };
-
-         // Common variables
-         var elem;
-         var uchart;
-         
-         // Draw pretty guage
-         drawGauge(ExternalTemperature);
-         
-         // Temperatures
-         if (h.Tsensor.length > 0) {
-            var tarray = [];
-            var tdata = new google.visualization.DataTable();
-            tdata.addColumn('date', '');
-            if (h.Tsensor.length === 1) {
-              tdata.addColumn('number', h.Tsensor[0].position);
-              // Ambient temp - last one- change the options
-              Toptions.vAxis.viewWindow.max = 25;
-              tarray = h.Tsensor[0].readings;
-            } else {
-              var tlist = [];
-              var hlist = [];
-              $.each(h.Tsensor, function(index, value) {
-                 tlist.push(value.readings);
-                 hlist.push(value.position);
-              });
-              tarray = mergeArrays(tlist,tdata,hlist);
-            }
-            tdata.addRows(tarray);
-            dateFormatter.format(tdata, 0);
-            elem = $('#temp'+h.id);
-            uchart = new google.visualization.LineChart(elem[0]);
-            uchart.draw(tdata, Toptions);
-            if (h.Tsensor.length === 1) {
-              //drawGauge(ExternalTemperature);
-            }
-            elem.parent().width(elem.find("svg").width());
-         }
-
-         // Humidity
-         var Hoptions = {
-            title: h.desc,
-            curveType: 'function',
-            interpolateNulls: true,
-            legend: { position: 'bottom' },
-            vAxis: { 
-              title: "Humidity %", 
-              viewWindowMode:'explicit',
-              viewWindow:{
-                max:100,
-                min:30
-              }
-            }
-         };
-         if (h.Hsensor.length > 0) {
-            var hdata = new google.visualization.DataTable();
-            hdata.addColumn('date', '');
-            hdata.addColumn('number', "Crownboard");
-            var hasData = false;
-            $.each(h.Hsensor, function(index, value) {
-                  if (undefined !== value) {
-                     hdata.addRows(value.readings);
-                     hasData = true;
-                  }
-            });
-            if (hasData) {
-               elem = $('#hum'+h.id);
-               uchart = new google.visualization.LineChart(elem[0]);
-               dateFormatter.format(hdata, 0);
-               uchart.draw(hdata, Hoptions);
-               elem.parent().width(elem.find("svg").width());
-            }
-         }
-
-      }
-
-      function getHive(r) {
-         var h = null;
-         $.each(hive, function(index, value) {
-                   if (r.hive_id === value.id)
-                      h = value;
-                });
-         return h;
-      }
-
-      function getSensor(r) {
-         var h = getHive(r);
-         
-         var sensors = (r.type === "T") ? h.Tsensor
-                                       : h.Hsensor;
-         var s = null;
-         $.each(sensors, function(index, value) {
-                   if (value.device === r.device)
-                      s = value;
-                });
-         // Not found - create a new one
-         if (!s) {
-            s = { "device": r.device,
-                  "position": r.position,
-                  "readings": []
-                };
-            sensors.push(s);
-         }
-         return s;
-      }
-
-      function getJSONData(type) {
-         var myURL = "//" + window.location.hostname + "/" + type;
-         
-         $.ajax({
-            url: myURL,
-            dataType: "json",
-            success: function(entries) {
-               $.each(entries, function(index, entry) {
-                  // Fixup for using sqlite
-                  entry.type     = (type === "temperature")? "T" : "H";
-                  entry.position = entry.sensor_name;
-                  entry.device   = entry.sensor_id;
-                  var s = getSensor(entry);
-                  var r = [ new Date(entry.timestamp.replace(/-/g, "/")),
-                            parseInt(entry.value) ];
-                  s.readings.push(r);
-               });
-               if (type === "temperature") {
-                  getJSONData("humidity");
-               } else { // Humidity readings - finished!
-                  $.each(hive, function(index, value) {
-                        if (undefined !== value)
-                           genGraphs(value);
-                  });
-               }
-            }
-         });
-      }
-
-      // Data blob for sensor readings
-      var hive = [ { "desc": "Wooden National",
-                     "id": "1",
-                     "Tsensor": [],
-                     "Hsensor": []
-                   },
-                   { "desc": "Red poly National",
-                     "id": "2",
-                     "Tsensor": [],
-                     "Hsensor": []
-                   },
-                   { "desc": "Ambient Temperature",
-                     "id": "3",
-                     "Tsensor": [],
-                     "Hsensor": []
-                   },
-                   { "desc": "Yellow poly National",
-                     "id": "4",
-                     "Tsensor": [],
-                     "Hsensor": []
-                   }];
-
-
-      
       // Page loaded - set up stuff
       $(document).ready(function() {
-
-         getJSONData("temperature");
-
+      	 initializePage();
       });
 
    </script>
@@ -275,39 +50,72 @@
 
 <body class="fixedBackground" style="background-image:url('images/light-23.jpg');">
    <div class="container-fluid">
-     <div class="page-header">
-        <h1 class="rawfont">Brendan's Beez<br />
-           <small>Image capture and temperature & humidity measurements</small>
-        </h1>
-     </div>
      <div class="row">
-       <div class="col-lg-6">
-          <img id="tv" alt="loading..." class="img-rounded img-responsive blockcenter"
-               src="http://myhomewebsite.com:10089/?action=stream"/>
+       <div class="col-md-4">
+          <img src="images/transparent01.png" class="img-responsive">
        </div>
-       <div class="col-lg-6">
-          <h3>Infrared Video
-          <small>(maximum 4 frames/sec)</small></h3>
-          <h4>
-          <p>View through the perspex crownboard, looking down into the super. Since
-          the bees haven't drawn comb yet, the view is of the bottom of two frames.
-          Occasionally a bee will blur the picture when she walks
-          in front of the camera.</p>
-          <p><span class="text-danger">Note that the size of the data being retrieved causes a noticeable delay - this will
-          be addressed by moving much of the processing to Bluemix.</span></p>
-          </h4>
-          <p>See how this is all done on <a href="http://brendanzbeez.blogspot.co.uk/2015/04/bluemix-and-internet-of-50000-small.html">my blog</a></p>
+       <div class="col-md-4">
+          <img src="images/transparent02.png" class="img-responsive">
+       </div>
+       <div class="col-md-4">
+          <img src="images/transparent03.png" class="img-responsive">
+       </div>
+     </div>
+   </div>
+   <div class="container-fluid">
+     <div class="row">
+       <div class="col-md-3"></div>
+       <div class="col-md-6">
+          <img alt="loading...." class="img-rounded img-responsive centeredImage" id="video1"
+               src="images/throbber.gif" onclick="streamVideo(10088,'#video1','stream')">
+       </div>
+       <div class="col-md-3"></div>
+     </div>
+
+   <div class="row">
+       <div class="col-md-12">
           <div class="blockcenter">
-             <h3>Current Temp</h3>
+             <h2>Current temperatures</h2>
+          </div>
+       </div>
+    </div>
+     <div class="row">
+       <div class="col-md-4">
+          <div class="blockcenter">
+             <h3>New Wooden Hive</h3>
              <div class="blockcenter">
-                <div id="curtmp"></div>
+                <div id="1BE4FA050000"></div>
+             </div>
+          </div>
+       </div>
+       <div class="col-md-4">
+          <div class="blockcenter">
+             <h3>Old Wooden Hive</h3>
+             <div class="blockcenter">
+                <div id="71EEFA050000"></div>
+             </div>
+          </div>
+       </div>
+       <div class="col-md-4">
+          <div class="blockcenter">
+             <h3>External</h3>
+             <div class="blockcenter">
+                <div id="8D85FB050000"></div>
              </div>
           </div>
        </div>
      </div>
+    <hr />
+   <div class="row">
+       <div class="col-md-12">
+          <div class="blockcenter">
+             <h2>Readings from the last few days</h2>
+          </div>
+       </div>
+    </div>
 
      <div class="row">
-       <div class="col-lg-6">
+       <div class="col-md-6">
           <div class="blockcenter">
              <h2>Temperature</h2>
           </div>
@@ -315,7 +123,7 @@
              <div id="temp1" class="blockcenter"></div>
           </div>
        </div>
-       <div class="col-lg-6">
+       <div class="col-md-6">
           <div class="blockcenter">
              <h2>Humidity</h2>
           </div>
@@ -326,7 +134,7 @@
      </div>
 
      <div class="row">
-       <div class="col-lg-6">
+       <div class="col-md-6">
           <div class="blockcenter">
              <h2>Temperature</h2>
           </div>
@@ -334,7 +142,7 @@
              <div id="temp2" class="blockcenter"></div>
           </div>
        </div>
-       <div class="col-lg-6">
+       <div class="col-md-6">
           <div class="blockcenter">
              <h2>Humidity</h2>
           </div>
@@ -344,7 +152,8 @@
        </div>
      </div>
      <div class="row">
-       <div class="col-lg-6">
+       <div class="col-md-3"></div>
+       <div class="col-md-6">
           <div class="blockcenter">
              <h2>Temperature</h2>
           </div>
@@ -352,62 +161,31 @@
              <div id="temp3" class="blockcenter"></div>
           </div>
        </div>
+       <div class="col-md-3"></div>
      </div>
-<!--
-     <div class="row">
-       <div class="col-lg-6">
-          <div class="blockcenter">
-             <div id="temp4" class="blockcenter"></div>
-          </div>
-       </div>
-       <div class="col-lg-6">
-          <div class="blockcenter">
-             <div id="hum4" class="blockcenter"></div>
-          </div>
-       </div>
-     </div>
--->
 
    </div>
+
 
    <div class="container-fluid">
-     <div class="row">
-       <div class="col-lg-6">
-          <h3 class="blockcenter">Recent comments</h3>
-          <p class="text-muted">I found queen cells in both hives so I've done an
-          artificial swarm to preempt the queen's departure. This means that now I
-          have four hives, two with queens and two without. Those without will now
-          raise their own queen and continue as before. I expect both hives to be
-          back to full strength in about three to four weeks, in plenty of time for
-          the main nectar flow.</p>
-          <p class="text-muted" style="text-align:right">- 1-May 2015</p>
-       </div>
-       <div class="col-lg-6">
-          <h3 class="blockcenter">Historical comments</h3>
-            <p class="text-muted">I've added supers (the boxes to catch the honey)
-		  both hives, and put queen excluders between these and the brood
-          boxes. The effect of this is that the temperature sensors cannot get
-          down into the brood box, so the temperature measurements are from
-          <ul><li>Just above the brood box, above the queen excluder</li>
-          <li>In the super</li>
-          <li>Above the crown board, under the roof</li>
-          </ul>
-          Note that the non-reporting sensor is now sending readings.
-          </p>
-          <p class="text-muted" style="text-align:right">- April 2015</p>
-          <p class="text-muted">I've removed the brace comb and 
-          cleaned the floors and given the wooden hive more room  - they
-          should be fine for another few weeks.
-          </p>
-          <p class="text-muted" style="text-align:right">- April 2015</p>
-          <p class="text-muted"> I haven't 
-          touched the brace comb yet since it's too early and I don't want
-          to disturb the hive until it's warm enough.</p>
-          <p class="text-muted" style="text-align:right">- March 2015</p>
-       </div>
-     </div>
+      <div class="col-md-12 footer">
+          <div class="blockcenter">
+          <p>See how this is all done on <a href="http://brendanzbeez.blogspot.co.uk/2015/04/bluemix-and-internet-of-50000-small.html">my blog</a></p>
+          </div>
+         <a href="https://twitter.com/bpmurray" class="twitter-follow-button"
+             data-lang="en" data-show-count="false">
+            Follow @bpmurray
+         </a>
+         &nbsp;&nbsp;&nbsp;&nbsp;
+         <a href="http://ie.linkedin.com/in/brendanmurray">
+            <img src="https://static.licdn.com/scds/common/u/img/webpromo/btn_profile_bluetxt_80x15.png" 
+             style="width:80;height:15;border:0;" 
+             alt="View Brendan Murray's profile on LinkedIn">
+         </a>
+         &nbsp;&nbsp;&nbsp;&nbsp;
+         &copy; Copyright Brendan Murray 2014, 2015
+      </div>
    </div>
-
+   <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="https://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
 </body></html>
-~
-
+<script type="text/javascript">initializePage();</script>

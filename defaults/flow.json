@@ -1,0 +1,90 @@
+[{
+	"id": "26a2dad.fd95d26",
+	"type": "ibmiot in",
+	"inputType": "evt",
+	"mac": "",
+	"deviceType": "+",
+	"eventCommandType": "+",
+	"format": "json",
+	"name": "IBM IoT App In",
+	"service": "quickstart",
+	"macChecked": "",
+	"deviceTypeChecked": true,
+	"eventChecked": true,
+	"formatChecked": "",
+	"x": 217,
+	"y": 225,
+	"z": "67a2f363.985d0c",
+	"wires": [["7601162e.89fee8",
+	"bd385f48.42c7a"]]
+},{
+	"id": "7601162e.89fee8",
+	"type": "function",
+	"name": "temp",
+	"func": "return {payload:msg.payload.d.temp};",
+	"outputs": 1,
+	"x": 390.5,
+	"y": 271,
+	"z": "67a2f363.985d0c",
+	"wires": [["3e1f743c.c1e08c"]]
+},{
+	"id": "3e1f743c.c1e08c",
+	"type": "switch",
+	"name": "temp thresh",
+	"property": "payload",
+	"rules": [{
+		"t": "lte",
+		"v": 40,
+		"v2": null
+	},
+	{
+		"t": "gt",
+		"v": 40,
+		"v2": null
+	}],
+	"checkall": "true",
+	"outputs": 2,
+	"x": 556.5,
+	"y": 271,
+	"z": "67a2f363.985d0c",
+	"wires": [["4d14d8db.b2eb28"],
+	["f5565792.0aa9a8"]]
+},{
+	"id": "43a6791f.bc5988",
+	"type": "debug",
+	"name": "cpu status",
+	"active": true,
+	"complete": "false",
+	"x": 867.5,
+	"y": 268,
+	"z": "67a2f363.985d0c",
+	"wires": []
+},{
+	"id": "bd385f48.42c7a",
+	"type": "debug",
+	"name": "device data",
+	"active": false,
+	"complete": "false",
+	"x": 407.5,
+	"y": 181,
+	"z": "67a2f363.985d0c",
+	"wires": []
+},{
+	"id": "4d14d8db.b2eb28",
+	"type": "template",
+	"name": "safe",
+	"template": "Temperature ({{payload}}) within safe limits",
+	"x": 720.5,
+	"y": 222,
+	"z": "67a2f363.985d0c",
+	"wires": [["43a6791f.bc5988"]]
+},{
+	"id": "f5565792.0aa9a8",
+	"type": "template",
+	"name": "danger",
+	"template": "Temperature ({{payload}}) critical",
+	"x": 719.5,
+	"y": 316,
+	"z": "67a2f363.985d0c",
+	"wires": [["43a6791f.bc5988"]]
+}]

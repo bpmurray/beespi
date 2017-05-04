@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<head><title>Bee Calculator</title>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <link rel="icon" href="images/favicon.ico">
+   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+   <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css">
+   <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
+
+   <link rel="stylesheet" href="css/styles.css" />
+
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+   <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+   <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+
+<script type="text/javascript">
+//             Hatch     Capped   Emerge
+//      Queen  3½ days     8+-1    16+-1    Laying   28+-5 
+//      Worker 3½ days     9+-1    20+-1    Foraging 42+-7 
+//      Drone  3½ days    10+-1    24+-1    DCA      38+-5
+
+   function calculateDates() {
+      var msPerDay = 86400000;
+      var times = [];
+      times["q"] = [ "Queen",  3, 7,  9, 15, 17, 23, 33, "Laying" ];
+      times["w"] = [ "Worker", 3, 8, 10, 19, 21, 35, 49, "Foraging" ];
+      times["d"] = [ "Drone",  3, 9, 11, 23, 35, 33, 43, "Flying to DCA" ];
+
+      var who  = $("#caste").val();
+      var what = $("#what").val();
+      var when = new Date($("#when").val());
+      
+      var values = times[who];
+      var laid1=new Date(), hatched1=new Date(), sealed1=new Date(), emerged1=new Date(), other1=new Date();
+      var laid2=new Date(), hatched2=new Date(), sealed2=new Date(), emerged2=new Date(), other2=new Date();
+      
+      if (what === "l") {
+         laid1    = laid2 = when;
+         hatched1.setTime(laid1.getTime() + msPerDay*values[1]);
+         hatched2.setTime(laid2.getTime() + msPerDay*values[1]);
+         sealed1.setTime(laid1.getTime() + msPerDay*values[2]);
+         sealed2.setTime(laid2.getTime() + msPerDay*values[3]);
+         emerged1.setTime(laid1.getTime() + msPerDay*values[4]);
+         emerged2.setTime(laid2.getTime() + msPerDay*values[5]);
+         other1.setTime(laid1.getTime() + msPerDay*values[6]);
+         other2.setTime(laid2.getTime() + msPerDay*values[7]);
+      } else if (what === "h") {
+         laid1.setTime(when.getTime() - msPerDay*values[1]);
+         laid2 = laid1;
+         hatched1 = hatched2 = when;
+         sealed1.setTime(laid1.getTime() + msPerDay*values[2]);
+         sealed2.setTime(laid2.getTime() + msPerDay*values[3]);
+         emerged1.setTime(laid1.getTime() + msPerDay*values[4]);
+         emerged2.setTime(laid2.getTime() + msPerDay*values[5]);
+         other1.setTime(laid1.getTime() + msPerDay*values[6]);
+         other2.setTime(laid2.getTime() + msPerDay*values[7]);
+      } else if (what === "s") {
+         laid1.setTime(when.getTime() - msPerDay*values[3]);
+         laid2.setTime(when.getTime() - msPerDay*values[2]);
+         hatched1.setTime(laid1.getTime() + msPerDay*values[1]);
+         hatched2.setTime(laid2.getTime() + msPerDay*values[1]);
+         sealed1 = sealed2 = when;
+         emerged1.setTime(laid1.getTime() + msPerDay*values[4]);
+         emerged2.setTime(laid2.getTime() + msPerDay*values[5]);
+         other1.setTime(laid1.getTime() + msPerDay*values[6]);
+         other2.setTime(laid2.getTime() + msPerDay*values[7]);
+      } else if (what === "e") {
+         laid1.setTime(when.getTime() - msPerDay*values[5]);
+         laid2.setTime(when.getTime() - msPerDay*values[4]);
+         hatched1.setTime(laid1.getTime() + msPerDay*values[1]);
+         hatched2.setTime(laid2.getTime() + msPerDay*values[1]);
+         sealed1.setTime(laid1.getTime() + msPerDay*values[2]);
+         sealed2.setTime(laid2.getTime() + msPerDay*values[3]);
+         emerged1 = emerged2 = when;
+         other1.setTime(laid1.getTime() + msPerDay*values[6]);
+         other2.setTime(laid2.getTime() + msPerDay*values[7]);
+      }
+
+
+      $("#txtcaste").text("Timeline for " + values[0]);
+      if (laid1 === laid2) {
+         markup = laid1.toLocaleDateString();
+      } else{
+         markup = laid1.toLocaleDateString() + " to " + laid2.toLocaleDateString();
+      }
+      $("#txtlaid").text(markup);
+
+      if (hatched1 === hatched2) {
+         markup = hatched1.toLocaleDateString();
+      } else{
+         markup = hatched1.toLocaleDateString() + " to " + hatched2.toLocaleDateString();
+      }
+      $("#txthatched").text(markup);
+
+      if (sealed1 === sealed2) {
+         markup = sealed1.toLocaleDateString();
+      } else{
+         markup = sealed1.toLocaleDateString() + " to " + sealed2.toLocaleDateString();
+      }
+      $("#txtsealed").text(markup);
+
+      if (emerged1 === emerged2) {
+         markup = emerged1.toLocaleDateString();
+      } else{
+         markup = emerged1.toLocaleDateString() + " to " + emerged2.toLocaleDateString();
+      }
+      $("#txtemerged").text(markup);
+
+      if (other1 === other2) {
+         markup = other1.toLocaleDateString();
+      } else{
+         markup =  other1.toLocaleDateString() + " to " + other2.toLocaleDateString();
+      }
+      $("#txtother1").text(values[8]);
+      $("#txtother2").text(markup);
+
+   }
+
+   $(function() { $("#when").datepicker(); });
+
+</script>
+</head>
+<body class="fixedBackground" style="background-image:url('images/light-23.jpg');">
+   <div class="container-fluid">
+      <div class="page-header blockcenter">
+         <h1 class="rawfont">Brendan's Beez<br />
+            <small>Bee development calculator</small>
+         </h1>
+      </div>
+
+      <div class="row">
+         <div class="col-lg-2">
+         </div>
+         <div class="col-lg-2">
+           <label for="caste">Caste:</label>
+            <select id="caste">
+               <option selected="selected" value="q">Queen</option>
+               <option value="w">Worker</option>
+               <option value="d">Drone</option>
+             </select> 
+         </div>
+         <div class="col-lg-2">
+            <label for="what">Event:</label>
+            <select id="what">
+               <option value="l" selected="selected">Egg laid</option>
+               <option value="h">Egg hatched</option>
+               <option value="s">Cell sealed</option>
+               <option value="e">Adult emerged</option>
+            </select> 
+         </div>
+         <div class="col-lg-2">
+            <label for="when">Date:</label>
+            <input type="text" id="when" style="width: 12em"/>
+         </div>
+         <div class="col-lg-2">
+            <input type="button" onclick="calculateDates();" value="Calculate"/>
+         </div>
+         <div class="col-lg-2">
+         </div>
+      </div>
+    </div>
+
+    <div class="container-fluid">
+       <div class="row">
+          <div class="col-lg-4">
+          </div>
+          <div class="col-lg-4">
+             <h3 class="blockcenter" id="txtcaste"></h3>
+          </div>
+          <div class="col-lg-4">
+          </div>
+       </div>
+       <div class="row">
+          <div class="col-lg-4">
+          </div>
+          <div class="blockcenter col-lg-4">
+             Egg laid:
+             <span id="txtlaid"></span>
+          </div>
+          <div class="col-lg-4">
+          </div>
+       </div>
+       <div class="row">
+          <div class="col-lg-4">
+          </div>
+          <div class="blockcenter col-lg-4">
+             Egg hatched:
+             <span id="txthatched"></span>
+          </div>
+          <div class="col-lg-4">
+          </div>
+       </div>
+       <div class="row">
+          <div class="col-lg-4">
+          </div>
+          <div class="blockcenter col-lg-4">
+             Cell sealed:
+             <span id="txtsealed"></span>
+          </div>
+          <div class="col-lg-4">
+          </div>
+       </div>
+       <div class="row">
+          <div class="col-lg-4">
+          </div>
+          <div class="blockcenter col-lg-4">
+             Adult emerged:
+             <span id="txtemerged"></span>
+          </div>
+          <div class="col-lg-4">
+          </div>
+       </div>
+       <div class="row">
+          <div class="col-lg-4">
+          </div>
+          <div class="blockcenter col-lg-4">
+             Date <span id="txtother1"></span>:
+             <span id="txtother2"></span>
+          </div>
+          <div class="col-lg-4">
+          </div>
+       </div>
+    </div>
+</body></html>
+
