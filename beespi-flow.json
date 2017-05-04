@@ -1,0 +1,429 @@
+[
+    {
+        "id": "24edf564.eff902",
+        "type": "ibmiot in",
+        "z": "4982e59a.b67d1c",
+        "authentication": "apiKey",
+        "apiKey": "d24d370.f2db2c8",
+        "inputType": "evt",
+        "deviceId": "",
+        "applicationId": "",
+        "deviceType": "",
+        "eventType": "",
+        "commandType": "",
+        "format": "",
+        "name": "Data from Pi sensors",
+        "service": "registered",
+        "allDevices": true,
+        "allApplications": "",
+        "allDeviceTypes": true,
+        "allEvents": true,
+        "allCommands": "",
+        "allFormats": true,
+        "qos": "0",
+        "x": 176.11666870117188,
+        "y": 80.11666870117188,
+        "wires": [
+            [
+                "fc65b7f7.ce753"
+            ]
+        ]
+    },
+    {
+        "id": "ea228666.15dd78",
+        "type": "http in",
+        "z": "4982e59a.b67d1c",
+        "name": "Specific sensors",
+        "url": "/sensor",
+        "method": "get",
+        "x": 152.00006103515625,
+        "y": 358.00006103515625,
+        "wires": [
+            [
+                "bf813c38.407ec"
+            ]
+        ]
+    },
+    {
+        "id": "49980a40.b667f4",
+        "type": "http request",
+        "z": "4982e59a.b67d1c",
+        "name": "Get temp from specific sensor",
+        "method": "GET",
+        "ret": "txt",
+        "url": "",
+        "tls": "",
+        "x": 702.0000457763672,
+        "y": 355.00006103515625,
+        "wires": [
+            [
+                "72eb91a4.8d147"
+            ]
+        ]
+    },
+    {
+        "id": "bf813c38.407ec",
+        "type": "function",
+        "z": "4982e59a.b67d1c",
+        "name": "Set sensor ID",
+        "func": "msg.url = \"http://coolfore.com/sensor.php?sensor=\" + msg.payload.sensor;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 385.00001525878906,
+        "y": 357.00006103515625,
+        "wires": [
+            [
+                "49980a40.b667f4"
+            ]
+        ]
+    },
+    {
+        "id": "ba8ff6a9.457008",
+        "type": "http response",
+        "z": "4982e59a.b67d1c",
+        "name": "Return temperature JS",
+        "x": 1191.0001678466797,
+        "y": 357.00006103515625,
+        "wires": []
+    },
+    {
+        "id": "72eb91a4.8d147",
+        "type": "function",
+        "z": "4982e59a.b67d1c",
+        "name": "Format as JS",
+        "func": "msg.headers = { \"Content-type\": \"text/javascript\" };\nreturn msg;",
+        "outputs": 1,
+        "x": 965.0000457763672,
+        "y": 356.00006103515625,
+        "wires": [
+            [
+                "ba8ff6a9.457008"
+            ]
+        ]
+    },
+    {
+        "id": "fc65b7f7.ce753",
+        "type": "cloudant out",
+        "z": "4982e59a.b67d1c",
+        "name": "Store captured data",
+        "cloudant": "",
+        "database": "beespidata",
+        "service": "beespi-cloudantNoSQLDB",
+        "payonly": true,
+        "operation": "insert",
+        "x": 496.1999969482422,
+        "y": 83.19999694824219,
+        "wires": []
+    },
+    {
+        "id": "48945c89.215adc",
+        "type": "function",
+        "z": "4982e59a.b67d1c",
+        "name": "Set up query",
+        "func": "// Request specifics begin\nvar dayCount = 4;   // Number of days to graph\n\n// Title\nmsg.what = \"temp\";\n\n// Number of sensors\nsensorCount = 7;\n\n// View\nviewName = \"tview\";\n\n// Request specifics end\n\n//////////////////////////////////////////////////////////////////////////////////////\n\n// Count number of entries\n// Read every 10 mins = 144 per day, x number of sensors\nreadCount = dayCount*144*sensorCount;\n\nvar now = new Date();\nvar millisecs = now.getTime() - dayCount*24*60*60*1000; // Days to ms\n//var millisecs = 1446335444340 - dayCount*24*60*60*1000;\n\n// URL\nmsg.url=\"https://4e80179c-f5f3-4c8b-9084-06cc6d967923-bluemix.cloudant.com/beespidata/_design/bees/_view/\" + viewName + \"?limit=\" + readCount + \"&reduce=false&start_key=\" + millisecs + \"&include_docs=true\";\n        \nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 350.4999542236328,
+        "y": 161.40005493164062,
+        "wires": [
+            [
+                "c65002a0.f86a18"
+            ]
+        ]
+    },
+    {
+        "id": "764d2ccf.f8a144",
+        "type": "http in",
+        "z": "4982e59a.b67d1c",
+        "name": "Read temperature",
+        "url": "/tdata",
+        "method": "get",
+        "swaggerDoc": "",
+        "x": 160.5,
+        "y": 160.60000610351562,
+        "wires": [
+            [
+                "48945c89.215adc"
+            ]
+        ]
+    },
+    {
+        "id": "ea2ac60c.4e334",
+        "type": "http in",
+        "z": "4982e59a.b67d1c",
+        "name": "Read humidity",
+        "url": "/hdata",
+        "method": "get",
+        "swaggerDoc": "",
+        "x": 142,
+        "y": 206.60000610351562,
+        "wires": [
+            [
+                "27a7eb97.618b6c"
+            ]
+        ]
+    },
+    {
+        "id": "27a7eb97.618b6c",
+        "type": "function",
+        "z": "4982e59a.b67d1c",
+        "name": "Set up query",
+        "func": "// Key = ibledwiffeledgethathalre\n// Password = 20f717286543499b6f00f76c3b1118a09dc3d3d5 \nvar dayCount = 4;   // Number of days to graph\n\n// Title\nmsg.what = \"hum\";\n\n// Number of sensors\nsensorCount = 2;\n\n// View\nviewName = \"hview\";\n\n// Request specifics end\n\n//////////////////////////////////////////////////////////////////////////////////////\n\n// Count number of entries\n// Read every 10 mins = 144 per day, x number of sensors\nreadCount = dayCount*144*sensorCount;\n\nvar now = new Date();\nvar millisecs = now.getTime() - dayCount*24*60*60*1000; // Days to ms\n//var millisecs = 1446335444340 - dayCount*24*60*60*1000;\n\n// URL\nmsg.url=\"https://4e80179c-f5f3-4c8b-9084-06cc6d967923-bluemix.cloudant.com/beespidata/_design/bees/_view/\" + viewName + \"?limit=\" + readCount + \"&reduce=false&start_key=\" + millisecs + \"&include_docs=true\";\n        \nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 344.9999542236328,
+        "y": 207.40005493164062,
+        "wires": [
+            [
+                "c65002a0.f86a18"
+            ]
+        ]
+    },
+    {
+        "id": "c65002a0.f86a18",
+        "type": "http request",
+        "z": "4982e59a.b67d1c",
+        "name": "Search Cloudant DB",
+        "method": "GET",
+        "ret": "obj",
+        "url": "",
+        "x": 593.9999847412109,
+        "y": 206.40005493164062,
+        "wires": [
+            [
+                "a74cecb4.ef5ba"
+            ]
+        ]
+    },
+    {
+        "id": "a74cecb4.ef5ba",
+        "type": "function",
+        "z": "4982e59a.b67d1c",
+        "name": "Format return",
+        "func": "var jszlib = context.global.jszlib;\n\nmsg.headers = { 'Content-Encoding':'deflate',\n                'Content-Type':'text/javascript; charset=utf-8',\n                'cache-control': 'no-cache'\n};\nvar myPayload = \"var \" + msg.what + \"Data = \" + JSON.stringify(msg.payload) + \";\";\nvar compressed = jszlib.deflateSync(myPayload, []);\nmsg.payload = compressed;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 840.9999847412109,
+        "y": 246.80007934570312,
+        "wires": [
+            [
+                "742abf7a.1be4e"
+            ]
+        ]
+    },
+    {
+        "id": "742abf7a.1be4e",
+        "type": "http response",
+        "z": "4982e59a.b67d1c",
+        "name": "Return data",
+        "x": 1063.0001068115234,
+        "y": 244.60018920898438,
+        "wires": []
+    },
+    {
+        "id": "958ebb7d.297cd",
+        "type": "http in",
+        "z": "4982e59a.b67d1c",
+        "name": "Read external",
+        "url": "/edata",
+        "method": "get",
+        "swaggerDoc": "",
+        "x": 142.1999969482422,
+        "y": 257.2000427246094,
+        "wires": [
+            [
+                "82e54867.809e88"
+            ]
+        ]
+    },
+    {
+        "id": "82e54867.809e88",
+        "type": "function",
+        "z": "4982e59a.b67d1c",
+        "name": "Set up query",
+        "func": "// Key = ibledwiffeledgethathalre\n// Password = 20f717286543499b6f00f76c3b1118a09dc3d3d5 \n\nvar dayCount = 4;   // Days to graph\n\n// Title\nmsg.what = \"ext\";\n\n// Number of sensors\nsensorCount = 1;\n\n// View\nviewName = \"eview\";\n\n// Request specifics end\n\n//////////////////////////////////////////////////////////////////////////////////////\n\n// Count number of entries\n// Read every 10 mins = 144 per day, x number of sensors\nreadCount = dayCount*144*sensorCount;\n\nvar now = new Date();\nvar millisecs = now.getTime() - dayCount*24*60*60*1000; // Days to ms\n//var millisecs = 1446335444340 - dayCount*24*60*60*1000;\n\n// URL\nmsg.url=\"https://4e80179c-f5f3-4c8b-9084-06cc6d967923-bluemix.cloudant.com/beespidata/_design/bees/_view/\" + viewName + \"?limit=\" + readCount + \"&reduce=false&start_key=\" + millisecs + \"&include_docs=true\";\n        \nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 347.19996643066406,
+        "y": 256.0001525878906,
+        "wires": [
+            [
+                "c65002a0.f86a18"
+            ]
+        ]
+    },
+    {
+        "id": "374b6097.c8b4a",
+        "type": "http in",
+        "z": "4982e59a.b67d1c",
+        "name": "Read hive data",
+        "url": "/hivedata",
+        "method": "get",
+        "swaggerDoc": "",
+        "x": 152.82986450195312,
+        "y": 296.8021545410156,
+        "wires": [
+            [
+                "c2bd78eb.3d4288"
+            ]
+        ]
+    },
+    {
+        "id": "c2bd78eb.3d4288",
+        "type": "cloudant in",
+        "z": "4982e59a.b67d1c",
+        "name": "All hives",
+        "cloudant": "",
+        "database": "hives",
+        "service": "beespi-cloudantNoSQLDB",
+        "search": "_all_",
+        "design": "_design",
+        "index": "livehives",
+        "x": 332.82630920410156,
+        "y": 300.0071716308594,
+        "wires": [
+            [
+                "53633042.ac9cd"
+            ]
+        ]
+    },
+    {
+        "id": "53633042.ac9cd",
+        "type": "function",
+        "z": "4982e59a.b67d1c",
+        "name": "Set variables",
+        "func": "msg.what = \"hive\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 561.8368377685547,
+        "y": 295.4863586425781,
+        "wires": [
+            [
+                "a74cecb4.ef5ba"
+            ]
+        ]
+    },
+    {
+        "id": "8f03b9d1.f9729",
+        "type": "http in",
+        "z": "4982e59a.b67d1c",
+        "name": "Weather",
+        "url": "/wdata",
+        "method": "get",
+        "swaggerDoc": "",
+        "x": 159,
+        "y": 832.5,
+        "wires": [
+            [
+                "f5c5736.f1c551"
+            ]
+        ]
+    },
+    {
+        "id": "aa4acf85.c2114",
+        "type": "http response",
+        "z": "4982e59a.b67d1c",
+        "name": "",
+        "x": 1199,
+        "y": 832,
+        "wires": []
+    },
+    {
+        "id": "dba37bc0.62bd1",
+        "type": "http request",
+        "z": "4982e59a.b67d1c",
+        "name": "weather.com",
+        "method": "GET",
+        "ret": "obj",
+        "url": "",
+        "x": 500,
+        "y": 832.5,
+        "wires": [
+            [
+                "b0e382b.36fa18"
+            ]
+        ]
+    },
+    {
+        "id": "f5c5736.f1c551",
+        "type": "function",
+        "z": "4982e59a.b67d1c",
+        "name": "IE",
+        "func": "var BaseURL=\"https://74c00a78-8b2b-4df1-abe2-cb2128fbb695:Xn2THaFSmx@twcservice.mybluemix.net/api/weather/v2/forecast/hourly/24hour?units=m&language=en-IE&geocode=\";\nvar Norway=\"69.390235,18.610300\";\nvar Home=\"53.759234,-6.442179\";\nvar Lighthouse=\"54.019888,-6.078723\";\n\nmsg.url=BaseURL + Lighthouse;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 332,
+        "y": 832.5,
+        "wires": [
+            [
+                "dba37bc0.62bd1"
+            ]
+        ]
+    },
+    {
+        "id": "b0e382b.36fa18",
+        "type": "function",
+        "z": "4982e59a.b67d1c",
+        "name": "NO",
+        "func": "var BaseURL=\"https://74c00a78-8b2b-4df1-abe2-cb2128fbb695:Xn2THaFSmx@twcservice.mybluemix.net/api/weather/v2/forecast/hourly/24hour?units=m&language=en-IE&geocode=\";\nvar Norway=\"69.390249,18.610295\";\nvar Home=\"53.759234,-6.442179\";\nvar Lighthouse=\"54.019888,-6.078723\";\n\nmsg.IE  = msg.payload;\nmsg.url = BaseURL + Norway;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 655,
+        "y": 832.5,
+        "wires": [
+            [
+                "90a0d5cf.b92e88"
+            ]
+        ]
+    },
+    {
+        "id": "90a0d5cf.b92e88",
+        "type": "http request",
+        "z": "4982e59a.b67d1c",
+        "name": "weather.com",
+        "method": "GET",
+        "ret": "obj",
+        "url": "",
+        "x": 819,
+        "y": 832,
+        "wires": [
+            [
+                "92a4a036.d6e8c8"
+            ]
+        ]
+    },
+    {
+        "id": "92a4a036.d6e8c8",
+        "type": "function",
+        "z": "4982e59a.b67d1c",
+        "name": "Set all return",
+        "func": "var jszlib = context.global.jszlib;\n\n\nvar returnData = { vals: [ msg.IE, msg.payload ]}\n\nmsg.headers = { 'Content-Encoding':'deflate',\n                'Content-Type':'text/javascript; charset=utf-8',\n                'cache-control': 'no-cache'\n};\nmsg.IE = null;\n\nvar myPayload = \"var WeatherData = \" + JSON.stringify(returnData) + \";\";\nvar compressed = jszlib.deflateSync(myPayload, []);\nmsg.payload = compressed;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1021,
+        "y": 831.5,
+        "wires": [
+            [
+                "aa4acf85.c2114"
+            ]
+        ]
+    },
+    {
+        "id": "75f06811.b60578",
+        "type": "debug",
+        "z": "4982e59a.b67d1c",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "false",
+        "x": 416,
+        "y": 38,
+        "wires": []
+    },
+    {
+        "id": "d24d370.f2db2c8",
+        "type": "ibmiot",
+        "z": "",
+        "name": "Raspberry Pi Sensors"
+    }
+]
